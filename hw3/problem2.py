@@ -13,32 +13,29 @@ def decodeState(alphaNum,precision,i):
 
 
 def valueFunction(precision, alpha_max, beta_max, H):
-    alpha_range = np.arange(precision, alpha_max + precision, precision)
-    beta_range = np.arange(precision, beta_max + precision, precision)
     alphaNum = int(floor(alpha_max / precision)) + 1
     maxState = encodeState(alpha_max, beta_max, precision, alphaNum) + 1
     minState = encodeState(precision, precision, precision, alphaNum)
     V = np.zeros((maxState, maxState, H))
-    #A = np.zeros((maxState, maxState, H))
     for h in range(H - 1, -1, -1):
         for i in range(minState,maxState):
             for j in range(minState,maxState):
                 alpha1, beta1 = decodeState(alphaNum, precision, i)
                 alpha2, beta2 = decodeState(alphaNum, precision, j)
-                #print(alpha2,beta2)
                 if j != encodeState(alpha2,beta2,precision,alphaNum):
                     print(j)
+                    print(encodeState(alpha2,beta2,precision,alphaNum))
+                    print("\n")
                 if h == (H-1):
                     V[i,j,h] = max(alpha1/(alpha1 + beta1), alpha2/(alpha2 + beta2))
-                    #A[i,j,h] = np.argmax([alpha1/(alpha1 + beta1), alpha2/(alpha2 + beta2)])
                 else:
                     params = [alpha1,beta1,alpha2,beta2]
                     V[i,j,h] = max(alpha1/(alpha1 + beta1) + evalIntegral(params,h,precision,V,alphaNum,maxState,minState,0),alpha2/(alpha2 + beta2) + evalIntegral(params,h,precision,V,alphaNum,maxState,minState,1))
-                    #A[i,j,h] = np.argmax([alpha1/(alpha1 + beta1) + evalIntegral(params,h,precision,V,alphaNum,maxState,minState,0),alpha2/(alpha2 + beta2) + evalIntegral(params,h,precision,V,alphaNum,maxState,minState,1)])
     i_test = encodeState(1,1,precision,alphaNum)
-    print(i_test)
-    print(V[i_test,i_test,0])
-    return V[minState:maxState-1,minState:maxState-1,0]
+    vals_tests = np.zeros(H)
+    for i in range(H - 1, -1, -1):
+        vals_tests[H-1-i] = V[i_test,i_test,i]
+    return vals_tests
 
 
 def evalIntegral(params,h,precision,V,alphaNum,maxState,minState,arm):
@@ -51,7 +48,7 @@ def evalIntegral(params,h,precision,V,alphaNum,maxState,minState,arm):
         params_new = trainsitionDyn(params,y,arm)#arm = {0,1}
         i = encodeState(params_new[0], params_new[1], precision, alphaNum)
         j = encodeState(params_new[2], params_new[3], precision, alphaNum)
-        if i >= maxState or j >= maxState or i <= minState or j <= minState:
+        if i >= maxState or j >= maxState or i < minState or j < minState:
             return 0
         if arm == 0:
             B_up = gamma(params_new[0])*gamma(params_new[1])/gamma(params_new[0]+params_new[1])
@@ -72,12 +69,15 @@ def sim(epoch,H):
     vals = np.zeros(epoch)
     for i in range(epoch):
         params = [1,1,1,1]
+        theta0 = np.random.beta(params[0], params[1], 1)
+        theta1 = np.random.beta(params[2], params[3], 1)
+        thetas = [theta0,theta1]
         val = 0
         for j in range(H):
             sample0 = np.random.beta(params[0],params[1],1)
             sample1 = np.random.beta(params[2],params[3],1)
             arm = np.argmax([sample0,sample1])
-            theta = max([sample0,sample1])
+            theta = thetas[arm]
             y = np.random.binomial(1,theta,1)
             if arm == 0:
                 params[0] = params[0] + y
@@ -94,16 +94,22 @@ def sim(epoch,H):
 
 if __name__=="__main__":
     k = 2
-    precision = 0.5
-    alpha_max = 35
-    beta_max = 35
+    precision = 1
+    alpha_max = 32
+    beta_max = 32
     H = 30
-    V = valueFunction(precision,alpha_max,beta_max,H)
-    #epoch = 5000
-    #value = sim(epoch,H)
-    #print((value))
-    V = np.array(V)
-    plt.imshow(V)
-    plt.colorbar()
+    vals_test = valueFunction(precision,alpha_max,beta_max,H)
+    vals_sim = np.zeros(H)
+    epoch = 2000
+    for h in range(1,H+1):
+        value = sim(epoch,h)
+        vals_sim[h-1] = value
+    vals_test = np.array(vals_test)
+    vals_sim = np.array(vals_sim)
+    Harray = np.arange(1,H+1,1)
+    fig, ax = plt.subplots()
+    plt.plot(Harray,vals_test,'r--',label='opt')
+    plt.plot(Harray,vals_sim,'bs',label='sim')
+    plt.legend()
     plt.show()
 
