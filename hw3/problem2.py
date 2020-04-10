@@ -98,9 +98,9 @@ def sim(epoch,H):
 if __name__=="__main__":
     k = 2
     precision = 1
-    alpha_max = 62
-    beta_max = 62
-    H = 60
+    alpha_max = 52
+    beta_max = 52
+    H = 50
     vals_test = valueFunction(precision,alpha_max,beta_max,H)
     vals_sim = np.zeros(H)
     epoch = 3000
