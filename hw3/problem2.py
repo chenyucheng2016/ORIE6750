@@ -30,7 +30,10 @@ def valueFunction(precision, alpha_max, beta_max, H):
                     V[i,j,h] = max(alpha1/(alpha1 + beta1), alpha2/(alpha2 + beta2))
                 else:
                     params = [alpha1,beta1,alpha2,beta2]
-                    V[i,j,h] = max(alpha1/(alpha1 + beta1) + evalIntegral(params,h,precision,V,alphaNum,maxState,minState,0),alpha2/(alpha2 + beta2) + evalIntegral(params,h,precision,V,alphaNum,maxState,minState,1))
+                    V[i,j,h] = max(evalIntegral(params,h,precision,V,alphaNum,maxState,minState,0),evalIntegral(params,h,precision,V,alphaNum,maxState,minState,1))
+                    if alpha1 == 1 and beta1 == 1 and alpha2 == 1 and beta2 == 1:
+                        print(evalIntegral(params,h,precision,V,alphaNum,maxState,minState,0))
+                        print(evalIntegral(params,h,precision,V,alphaNum,maxState,minState,1))
     i_test = encodeState(1,1,precision,alphaNum)
     vals_tests = np.zeros(H)
     for i in range(H - 1, -1, -1):
@@ -72,7 +75,7 @@ def sim(epoch,H):
         theta0 = np.random.beta(params[0], params[1], 1)
         theta1 = np.random.beta(params[2], params[3], 1)
         thetas = [theta0,theta1]
-        val = 0
+        #val = 0
         for j in range(H):
             sample0 = np.random.beta(params[0],params[1],1)
             sample1 = np.random.beta(params[2],params[3],1)
@@ -85,8 +88,8 @@ def sim(epoch,H):
             elif arm == 1:
                 params[2] = params[2] + y
                 params[3] = params[3] + 1 - y
-            val = val + y
-        vals[i] = val
+            #val = val + y
+        vals[i] = max(params[0]/(params[0] + params[1]), params[2]/(params[2] + params[3]))
     return np.mean(vals)
 
 
@@ -95,15 +98,15 @@ def sim(epoch,H):
 if __name__=="__main__":
     k = 2
     precision = 1
-    alpha_max = 32
-    beta_max = 32
-    H = 30
+    alpha_max = 62
+    beta_max = 62
+    H = 60
     vals_test = valueFunction(precision,alpha_max,beta_max,H)
     vals_sim = np.zeros(H)
-    epoch = 2000
-    for h in range(1,H+1):
+    epoch = 3000
+    for h in range(H):
         value = sim(epoch,h)
-        vals_sim[h-1] = value
+        vals_sim[h] = value
     vals_test = np.array(vals_test)
     vals_sim = np.array(vals_sim)
     Harray = np.arange(1,H+1,1)
@@ -112,4 +115,5 @@ if __name__=="__main__":
     plt.plot(Harray,vals_sim,'bs',label='sim')
     plt.legend()
     plt.show()
+
 
