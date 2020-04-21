@@ -35,6 +35,7 @@ def valueFunction(discrete_theta, theta_max, measure_max, H):
                     params = [theta1,mNum1,theta2,mNum2]
                     V[i,j,h] = max(evalIntegralMC(params, h, discrete_theta, V, thetaNum, maxState, minState, 0, theta_max),
                                    evalIntegralMC(params, h, discrete_theta, V, thetaNum, maxState, minState, 1, theta_max))
+            
     val_intest = []
 
     for h in range(H):
@@ -87,52 +88,48 @@ def trainsitionDyn(params, y, arm, discrete_theta, theta_max):
     elif arm == 1:
         oldprecision = 1 + params[3]
         return [params[0], params[1],round((oldprecision*(params[2] - theta_max) + y)/(oldprecision + 1)/discrete_theta)*discrete_theta + theta_max, params[3] + 1]
-
+def sim(epoch,H):
+    mu1 = 0
+    sigma1 = 1
+    mu2 = 0
+    sigma2 = 1
+    lambdaVar = 1
+    v = np.zeros(epoch)
+    for i in range(epoch):
+        x1 = np.random.normal(mu1, sigma1, 1)
+        x2 = np.random.normal(mu2, sigma2, 1)
+        theta1 = 0
+        var1 = 1
+        theta2 = 0
+        var2 = 1
+        for h in range(H):
+            sample1 = np.random.normal(theta1, var1, 1)
+            sample2 = np.random.normal(theta2, var2, 1)
+            arm = np.argmax([sample1,sample2])
+            if arm == 0:
+                y = np.random.normal(x1,lambdaVar,1)
+                theta1 = (var1*y + lambdaVar*theta1)/(var1 + lambdaVar)
+                var1 = var1 * lambdaVar / (var1 + lambdaVar)
+            elif arm == 1:
+                y = np.random.normal(x2,lambdaVar,1)
+                theta2 = (var2*y + lambdaVar*theta2)/(var2 + lambdaVar)
+                var2 = var2 * lambdaVar / (var2 + lambdaVar)
+        v[i] = max(theta1,theta2)
+    return np.mean(v)
 
 if __name__=="__main__":
     k = 2
-    discrete_theta = 0.5
+    discrete_theta = 0.2
     measure_max = 9
     theta_max = 10
     H = 10
-    vals = valueFunction(discrete_theta, theta_max, measure_max, H)
-
-    """
-    file1 = open("arr1", "wb")
-    np.savetxt(file1, vals[:,:,1])
-    file1.close()
-    file2 = open("arr2", "wb")
-    np.savetxt(file2, vals[:,:,2])
-    file2.close()
-    file3 = open("arr3", "wb")
-    np.savetxt(file3, vals[:,:,3])
-    file3.close()
-    file4 = open("arr4", "wb")
-    np.savetxt(file4, vals[:,:,4])
-    file4.close()
-    file5 = open("arr5", "wb")
-    np.savetxt(file5, vals[:,:,5])
-    file5.close()
-    file6 = open("arr6", "wb")
-    np.savetxt(file6, vals[:,:,6])
-    file6.close()
-    file7 = open("arr7", "wb")
-    np.savetxt(file7, vals[:,:,7])
-    file7.close()
-    file8 = open("arr8", "wb")
-    np.savetxt(file8, vals[:,:,8])
-    file8.close()
-    file9 = open("arr9", "wb")
-    np.savetxt(file9, vals[:,:,9])
-    file9.close()
-    
-    
+    #vals = valueFunction(discrete_theta, theta_max, measure_max, H)
     vals_sim = np.zeros(H)
-    epoch = 3000
+    epoch = 10000
     for h in range(H):
         value = sim(epoch,h)
         vals_sim[h] = value
-    vals_test = np.array(vals_test)
+    vals_test = np.array([0.0,0.406,0.5631,0.6137,0.6596,0.6651,0.6947,0.7113,0.7143,0.7283])
     vals_sim = np.array(vals_sim)
     Harray = np.arange(1,H+1,1)
     fig, ax = plt.subplots()
@@ -140,5 +137,5 @@ if __name__=="__main__":
     plt.plot(Harray,vals_sim,'bs',label='sim')
     plt.legend()
     plt.show()
-    """
+    
 
