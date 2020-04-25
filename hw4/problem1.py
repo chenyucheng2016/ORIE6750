@@ -1,18 +1,18 @@
 import numpy as np
-from math import floor, gamma
+from math import floor
 import matplotlib.pyplot as plt
 import time
 import scipy.stats as stats
 def encodeState(theta, mNum, discrete_theta, thetaNum):
-    return int(floor((theta - discrete_theta)/discrete_theta) + thetaNum*mNum)
+    return int(round((theta - discrete_theta)/discrete_theta) + thetaNum*mNum)
 def decodeState(thetaNum,discrete_theta,i):
-    theta = i % thetaNum + 1
+    theta = i % thetaNum +  1
     mNum =  floor(int(i) / int(thetaNum))
     return theta*discrete_theta, mNum
 
 
 def valueFunction(discrete_theta, theta_max, measure_max, H):
-    thetaNum = int(floor(2*theta_max / discrete_theta))
+    thetaNum = int(round(2*theta_max / discrete_theta))
     maxState = int(encodeState(2*theta_max, measure_max, discrete_theta, thetaNum)) + 1
     minState = int(encodeState(discrete_theta, 0, discrete_theta, thetaNum))
     V = np.zeros((maxState, maxState, H))
@@ -24,7 +24,6 @@ def valueFunction(discrete_theta, theta_max, measure_max, H):
             for j in range(minState,maxState):#var
                 theta1, mNum1 = decodeState(thetaNum, discrete_theta, i)
                 theta2, mNum2 = decodeState(thetaNum, discrete_theta, j)
-                #print(theta2, mNum2)
                 if j != encodeState(theta2, mNum2, discrete_theta, thetaNum):
                     print(j)
                     print(encodeState(theta2, mNum2, discrete_theta, thetaNum))
@@ -45,40 +44,41 @@ def valueFunction(discrete_theta, theta_max, measure_max, H):
 
 
 def evalIntegralMC(params, h, discrete_theta, V, thetaNum, maxState, minState, arm, theta_max):
-    theta1 = params[0]
-    mNum1 = params[1]
-    theta2 = params[2]
-    mNum2 = params[3]
     valueInt = 0
-    nSamples = 1000
+    nSamples = 200
     counter = 0
-    #print(V[:,:,h+1])
-    #time.sleep(20)
     if arm == 0:
-        ys = np.random.normal(params[0] - theta_max, 1.0/(params[1] + 1) + 1, nSamples)
+        ys = np.random.normal(params[0] - theta_max, np.sqrt(1.0/(params[1] + 1) + 1), nSamples)
         for y in ys:
             params_new = trainsitionDyn(params, y, arm, discrete_theta, theta_max)#arm = {0,1}
             i = encodeState(params_new[0], params_new[1], discrete_theta, thetaNum) 
             j = encodeState(params_new[2], params_new[3], discrete_theta, thetaNum)
             if i >= maxState or j >= maxState:
-                print("exceed")
+                #print("exceed")
                 continue
             else:
                 counter += 1
                 valueInt = valueInt + V[i,j,h+1]
-        return valueInt/counter
+        if counter == 0:
+            return 0
+        else:
+            return valueInt/counter
     elif arm == 1:
-        ys = np.random.normal(params[2] - theta_max, 1.0/(params[3] + 1) + 1, nSamples)
+        ys = np.random.normal(params[2] - theta_max, np.sqrt(1.0/(params[3] + 1) + 1), nSamples)
         for y in ys:
             params_new = trainsitionDyn(params, y, arm, discrete_theta, theta_max)#arm = {0,1}
             i = encodeState(params_new[0], params_new[1], discrete_theta, thetaNum)
             j = encodeState(params_new[2], params_new[3], discrete_theta, thetaNum)
             if i >= maxState or j >= maxState:
+                #print("exceed")
                 continue
             else:
                 counter += 1
                 valueInt = valueInt + V[i,j,h+1]
-        return valueInt/counter
+        if counter == 0:
+            return 0
+        else:
+            return valueInt / counter
 
 
 def trainsitionDyn(params, y, arm, discrete_theta, theta_max):
@@ -119,23 +119,24 @@ def sim(epoch,H):
 
 if __name__=="__main__":
     k = 2
-    discrete_theta = 0.2
+    discrete_theta = 0.05
     measure_max = 9
-    theta_max = 10
+    theta_max = 3
     H = 10
-    #vals = valueFunction(discrete_theta, theta_max, measure_max, H)
+    vals = valueFunction(discrete_theta, theta_max, measure_max, H)
+    """"
     vals_sim = np.zeros(H)
-    epoch = 10000
+    epoch = 2000
     for h in range(H):
         value = sim(epoch,h)
         vals_sim[h] = value
-    vals_test = np.array([0.0,0.406,0.5631,0.6137,0.6596,0.6651,0.6947,0.7113,0.7143,0.7283])
     vals_sim = np.array(vals_sim)
     Harray = np.arange(1,H+1,1)
     fig, ax = plt.subplots()
-    plt.plot(Harray,vals_test,'r--',label='opt')
+    plt.plot(Harray,vals,'r--',label='opt')
     plt.plot(Harray,vals_sim,'bs',label='sim')
     plt.legend()
     plt.show()
+    """
     
 
