@@ -40,6 +40,29 @@ class InfectionGraph:
         for person in testPeople:
             if self.isInfected(person):
                 self.infectedPeople.remove(person)
+if __name__=="__main__":
+    numPeople = 50
+    maxConnection = 6
+    nodes = np.linspace(0,numPeople-1,numPeople)
+    nodes = np.int_(nodes)
+    adjMat = np.zeros((numPeople,numPeople))
+    p = 0.5
+    q = 0.5
+    L = 10
+    for i in nodes:
+        connection = np.random.randint(int(maxConnection/2),maxConnection)
+        children = np.random.choice(numPeople,connection,replace=False)
+        for child in children:
+            adjMat[i][child] = 1
+    for i in nodes:
+        for j in nodes:
+            if adjMat[i][j] > 0:
+                adjMat[j][i] = 1
+    iGraph = InfectionGraph(nodes, adjMat, p, q, L)
+
+
+
+
 
 
 
