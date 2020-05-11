@@ -24,9 +24,20 @@ class InfectionGraph:#all information about a state
             if abs(infect - target) < 0.01:
                 return 1
         return 0
+def findEdges(adjMat,numPeople):
+    edges = []
+    for i in range(numPeople):
+        for j in range(i,numPeople):
+            if adjMat[i,j] > 0:
+                edges.append([i,j])
+    return edges
+
 def valueFunction(init_belief, adjMat, p ,q, L):
     numPeople = len(init_belief)
-    belief
+    belief_discretization = [0,0.25,0.5,0.75,1]
+    edges = findEdges(adjMat,numPeople)
+    numEdges = len(edges)
+    
 
 
 if __name__=="__main__":
