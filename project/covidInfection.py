@@ -1,25 +1,21 @@
 import numpy as np
 
-class InfectionGraph:
-    def __init__(self, nodes, adjMat, p,q,L):
+class InfectionGraph:#all information about a state
+    def __init__(self, nodes, adjMat, p, q, L, init_belief):
         self.nodes = nodes
-        self.adjMat = adjMat
+        self.numPeople = len(nodes)
+        self.adjMat = adjMat #initial social connections for the individuals
         self.p = p #probability of infecting neighbors
         self.q = q #probability of reporting to public health
         self.L = L #number of tests each time
-        self.numPeople = len(nodes)
-        self.peopleInGraph = len(nodes)
-        init_infected = np.random.randint(self.numPeople)
-        self.infectedPeople = [init_infected]
+        self.init_belief = init_belief #initial belief
     def findChildrenNodes(self,start):
         children = []
         for i in range(self.numPeople):
             if self.adjMat[start][i] > 0:
                 children.append(i)
         return children
-    def removeNode(self,infected):
-        self.nodes.remove(infected)
-        self.peopleInGraph = len(self.nodes)
+    def isolateNode(self,infected):
         for i in range(self.numPeople):
             self.adjMat[infected][i] = 0
             self.adjMat[i][infected] = 0
@@ -28,18 +24,11 @@ class InfectionGraph:
             if abs(infect - target) < 0.01:
                 return 1
         return 0
-    def evolveOneTimeStep(self, testPeople):
-        for infect in self.infectedPeople:
-            children = self.findChildrenNodes(infect)
-            for child in children:
-                if np.random.uniform(0,1,1) <= self.p and self.isInfected(child) == 0:
-                    self.infectedPeople.append(child)
-        for infect in self.infectedPeople:#remove the infected people who are self reported
-            if np.random.uniform(0,1) <= self.q:
-                self.infectedPeople.remove(infect)
-        for person in testPeople:
-            if self.isInfected(person):
-                self.infectedPeople.remove(person)
+def valueFunction(init_belief, adjMat, p ,q, L):
+    numPeople = len(init_belief)
+    belief
+
+
 if __name__=="__main__":
     p = 0.5
     q = 0.5
@@ -48,12 +37,13 @@ if __name__=="__main__":
     numPeople = 3
     nodes = np.linspace(0,numPeople-1,numPeople)
     nodes = np.int_(nodes)
+    init_belief = np.array([2.0/3.0,1.0/2.0,1.0/2.0])
     adjMat = np.zeros((numPeople,numPeople))
     adjMat[0,1] = 1
     adjMat[0,2] = 1
     adjMat[1,0] = 1
     adjMat[2,0] = 1
-    iGraph = InfectionGraph(nodes, adjMat, p, q, L)
+    V = valueFunction(init_belief, adjMat, p, q, L)
 
 
 
