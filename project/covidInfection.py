@@ -107,7 +107,7 @@ class InfectionPOMDP:
     def controlSet(self, unCertain):
         return list(combinations(unCertain, self.L))
 
-    def ExpectVal(self, state, Lt, observe, unCertain, belief, V, h):#expected value over dynamics given an observation
+    def ExpectVal(self, state, Lt, observe, unCertain, belief, h):#expected value over dynamics given an observation
         #Lt is the index of the individual that is tested
         #observe is the test result {0,1}
         # updated by observation
@@ -134,11 +134,11 @@ class InfectionPOMDP:
                     product_self_report = product_self_report * self.q * belief[person]
                 prob[i] = product_self_report
         prob[0] = 1 - np.sum(prob[1:])
+        expectedVal = 0
         for i in range(len(p_unCertain)):
             selfReport = p_unCertain[i]
             if not selfReport: #no self report
                 new_state = self.transitionDynamics(state)
-                #compute value of this state
             else:
                 for sr in selfReport:
                     belief[sr] = 1
@@ -146,10 +146,17 @@ class InfectionPOMDP:
                 for j in range(len(belief)):
                     new_state[j] = round(belief[j]/self.belief_precision)
             new_state = self.isolateInfected(new_state)
-    def evalStateValue(self,state,h):
+            v = self.evalStateValue(new_state, h, 0, self.V)
+            expectedVal = expectedVal + v * prob[i]
+        return expectedVal
+    
+    def evalStateValue(self, state, h, l, V):
         #use recursion to evaluate state value
-        return 0
-
+        if l == len(self.valueSize[0:-1]):
+            return V[h]
+        else:
+            i = state[l]
+            return self.evalStateValue(state, h , l+1, V[i])
 
     def isolateInfected(self, state):
         belief = self.belief_discretization[np.array(state[0:self.numPeople])]
@@ -198,8 +205,10 @@ if __name__=="__main__":
     adjMat[1,0] = 1
     adjMat[2,0] = 1
     iPOMDP = InfectionPOMDP(init_belief, adjMat, p, q, L, H)
-    state = [4,1,1,1,1]
-    print(iPOMDP.isolateInfected(state))
+    state = [0,1,0,1,1]
+    print(iPOMDP.valueFunction())
+    #print(iPOMDP.V)
+    print(iPOMDP.evalStateValue(state, 3, 0, iPOMDP.V))
 
 
 
