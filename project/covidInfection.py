@@ -85,10 +85,9 @@ class InfectionPOMDP:
     def valueFunction(self):
         for h in range(self.H-1, -1, -1):
             self.stateSearch(-np.ones(self.numPeople + self.numEdges), h, 0, self.V)
+
     def transitionDynamics(self, state):#no self report
         belief = self.belief_discretization[np.array(state[0:self.numPeople])]
-        #print(belief)
-        #print(state)
         new_state = deepcopy(state)
         for i in range(self.numPeople):
             neighbors = self.findNeighbors(state, i)
@@ -100,6 +99,7 @@ class InfectionPOMDP:
                     product_neighbor = product_neighbor * (1 - self.p*belief[ne])
                 new_state[i] = round((belief[i] + (1 - belief[i])*(1 - product_neighbor))/self.belief_precision)
         return np.int_(new_state)
+
     def evalIntegral(self, state, Lt, h):
         belief = self.belief_discretization[np.array(state[0:self.numPeople])]
         unCertain = self.findUncertain(belief)
@@ -110,6 +110,18 @@ class InfectionPOMDP:
     def ExpectVal(self, state, Lt, observe, unCertain, belief, V, h):#expected value over dynamics given an observation
         #Lt is the index of the individual that is tested
         #observe is the test result {0,1}
+        # updated by observation
+        for i in range(len(Lt)):
+            l = Lt[i]
+            belief[l] = observe[i]
+            unCertain.remove(l)
+        infected = self.findInfected(belief)
+        uninfected = self.findUninfected(belief)
+        for person in infected:
+            state[person] = round(1/self.belief_precision)
+        for person in uninfected:
+            state[person] = 0
+        #uncertainty from self report
         p_unCertain = self.generatePowerSet(unCertain)
         prob = np.zeros(len(p_unCertain))
         for i in range(len(p_unCertain)):
@@ -123,11 +135,22 @@ class InfectionPOMDP:
                 prob[i] = product_self_report
         prob[0] = 1 - np.sum(prob[1:])
         for i in range(len(p_unCertain)):
-            print('TODO')
-            #unpdate belief
-            #update graph
-            #come back to state
-            #compute value
+            selfReport = p_unCertain[i]
+            if not selfReport: #no self report
+                new_state = self.transitionDynamics(state)
+                #compute value of this state
+            else:
+                for sr in selfReport:
+                    belief[sr] = 1
+                new_state = deepcopy(state)
+                for j in range(len(belief)):
+                    new_state[j] = round(belief[j]/self.belief_precision)
+            new_state = self.isolateInfected(new_state)
+    def evalStateValue(self,state,h):
+        #use recursion to evaluate state value
+        return 0
+
+
     def isolateInfected(self, state):
         belief = self.belief_discretization[np.array(state[0:self.numPeople])]
         infected = self.findInfected(belief)
@@ -145,7 +168,9 @@ class InfectionPOMDP:
                 eg = self.edges[i]
                 if abs(e2m[0] - eg[0]) < 0.00001 and abs(e2m[1] - eg[1]) < 0.00001:
                     edges2RemoveIdx.append(i)
-        return edges2RemoveIdx
+        for i in edges2RemoveIdx:
+            state[int(i + self.numPeople)] = 0
+        return state
 
     def generatePowerSet(self, set):
         setSize = len(set)
@@ -173,9 +198,8 @@ if __name__=="__main__":
     adjMat[1,0] = 1
     adjMat[2,0] = 1
     iPOMDP = InfectionPOMDP(init_belief, adjMat, p, q, L, H)
-    state = [1,4,4,0,1]
+    state = [4,1,1,1,1]
     print(iPOMDP.isolateInfected(state))
-    print(iPOMDP.edges)
 
 
 
