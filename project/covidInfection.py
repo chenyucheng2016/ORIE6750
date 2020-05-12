@@ -107,9 +107,9 @@ class InfectionPOMDP:
     def controlSet(self, unCertain):
         return list(combinations(unCertain, self.L))
 
-    def ExpectVal(self, state, Lt, observ, unCertain, belief):#expected value over dynamics given an observation
+    def ExpectVal(self, state, Lt, observe, unCertain, belief, V, h):#expected value over dynamics given an observation
         #Lt is the index of the individual that is tested
-        #observ is the test result
+        #observe is the test result {0,1}
         p_unCertain = self.generatePowerSet(unCertain)
         prob = np.zeros(len(p_unCertain))
         for i in range(len(p_unCertain)):
@@ -122,8 +122,20 @@ class InfectionPOMDP:
                     product_self_report = product_self_report * self.q * belief[person]
                 prob[i] = product_self_report
         prob[0] = 1 - np.sum(prob[1:])
-        print(prob)
-        print(np.sum(prob))
+        for i in range(len(p_unCertain)):
+
+            #unpdate belief
+            #update graph
+            #come back to state
+            #compute value
+    def isolateInfected(self, state):
+        belief = self.belief_discretization[np.array(state[0:self.numPeople])]
+        connections = state[-self.numEdges:]
+        infected = self.findInfected(belief)
+        for person in infected:
+            
+
+
 
     def generatePowerSet(self, set):
         setSize = len(set)
@@ -137,7 +149,7 @@ class InfectionPOMDP:
 
 if __name__=="__main__":
     p = 0.3
-    q = 0.5
+    q = 0.1
     L = 1
     #case 1
     numPeople = 3
