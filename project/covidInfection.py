@@ -103,7 +103,13 @@ class InfectionPOMDP:
     def evalIntegral(self, state, Lt, h):
         belief = self.belief_discretization[np.array(state[0:self.numPeople])]
         unCertain = self.findUncertain(belief)
-        self.ExpectVal(state,1,unCertain,belief)
+        self.ExpectVal(state,1,unCertain,belief) # need to modify
+
+    def observationFnc(self, Lt):#generate all observations associated with one control input
+        prob = []
+        for l in Lt:
+            self.
+
     def controlSet(self, unCertain):
         return list(combinations(unCertain, self.L))
 
@@ -149,7 +155,7 @@ class InfectionPOMDP:
             v = self.evalStateValue(new_state, h, 0, self.V)
             expectedVal = expectedVal + v * prob[i]
         return expectedVal
-    
+
     def evalStateValue(self, state, h, l, V):
         #use recursion to evaluate state value
         if l == len(self.valueSize[0:-1]):
