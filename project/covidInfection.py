@@ -123,19 +123,29 @@ class InfectionPOMDP:
                 prob[i] = product_self_report
         prob[0] = 1 - np.sum(prob[1:])
         for i in range(len(p_unCertain)):
-
+            print('TODO')
             #unpdate belief
             #update graph
             #come back to state
             #compute value
     def isolateInfected(self, state):
         belief = self.belief_discretization[np.array(state[0:self.numPeople])]
-        connections = state[-self.numEdges:]
         infected = self.findInfected(belief)
+        edges2Remove = []
+        edges2RemoveIdx = []
         for person in infected:
-            
-
-
+            neighbors = self.findNeighbors(state,person)
+            for ne in neighbors:
+                if person > ne:
+                    edges2Remove.append([ne, person])
+                else:
+                    edges2Remove.append([person, ne])
+        for e2m in edges2Remove:
+            for i in range(len(self.edges)):
+                eg = self.edges[i]
+                if abs(e2m[0] - eg[0]) < 0.00001 and abs(e2m[1] - eg[1]) < 0.00001:
+                    edges2RemoveIdx.append(i)
+        return edges2RemoveIdx
 
     def generatePowerSet(self, set):
         setSize = len(set)
@@ -163,8 +173,9 @@ if __name__=="__main__":
     adjMat[1,0] = 1
     adjMat[2,0] = 1
     iPOMDP = InfectionPOMDP(init_belief, adjMat, p, q, L, H)
-    state = [1,1,1,1,1]
-    iPOMDP.evalIntegral(state,1,1)
+    state = [1,4,4,0,1]
+    print(iPOMDP.isolateInfected(state))
+    print(iPOMDP.edges)
 
 
 
