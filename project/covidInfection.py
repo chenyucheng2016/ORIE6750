@@ -105,10 +105,31 @@ class InfectionPOMDP:
         unCertain = self.findUncertain(belief)
         self.ExpectVal(state,1,unCertain,belief) # need to modify
 
-    def observationFnc(self, Lt):#generate all observations associated with one control input
+    def observationFnc(self, Lt, belief):#generate all observations associated with one control input
         prob = []
-        for l in Lt:
-            self.
+        ob_set = []
+        self.generateObservations([], ob_set)
+        for i in range(len(ob_set)):
+            ob_case = ob_set[i]
+            product_ob = 1
+            for j in range(len(ob_case)):
+                ob = ob_case[j]
+                person = Lt[j]
+                product_ob = product_ob * (belief[person]**ob)*((1 - belief[j])**(1-ob))
+            prob[i] = product_ob
+
+
+        #    self.
+    def generateObservations(self, ob_case, ob_set):
+        if len(ob_case) == self.L:
+            ob_set.append(ob_case)
+            return
+        else:
+            for i in [0,1]:
+                new_ob_case = deepcopy(ob_case)
+                new_ob_case.append(i)
+                self.generateObservations(new_ob_case, ob_set)
+
 
     def controlSet(self, unCertain):
         return list(combinations(unCertain, self.L))
@@ -214,7 +235,12 @@ if __name__=="__main__":
     state = [0,1,0,1,1]
     print(iPOMDP.valueFunction())
     #print(iPOMDP.V)
-    print(iPOMDP.evalStateValue(state, 3, 0, iPOMDP.V))
+    #print(iPOMDP.evalStateValue(state, 3, 0, iPOMDP.V))
+    ob_case = []
+    ob_set = []
+    iPOMDP.generateObservations(ob_case,ob_set)
+    print(ob_set)
+    prin
 
 
 
