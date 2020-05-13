@@ -103,7 +103,13 @@ class InfectionPOMDP:
     def evalIntegral(self, state, Lt, h):
         belief = self.belief_discretization[np.array(state[0:self.numPeople])]
         unCertain = self.findUncertain(belief)
-        self.ExpectVal(state,1,unCertain,belief) # need to modify
+        prob_ob, ob_set = self.observationFnc(Lt,belief)
+        val_int = 0
+        for i in range(len(ob_set)):
+            ob = ob_set[i]
+            expectedVal = self.ExpectVal(state, Lt, ob, unCertain, belief, h)
+            val_int = val_int + expectedVal * prob_ob[i]
+        return val_int
 
     def observationFnc(self, Lt, belief):#generate all observations associated with one control input
         prob = []
@@ -117,9 +123,8 @@ class InfectionPOMDP:
                 person = Lt[j]
                 product_ob = product_ob * (belief[person]**ob)*((1 - belief[j])**(1-ob))
             prob[i] = product_ob
+        return prob, ob_set
 
-
-        #    self.
     def generateObservations(self, ob_case, ob_set):
         if len(ob_case) == self.L:
             ob_set.append(ob_case)
@@ -240,7 +245,7 @@ if __name__=="__main__":
     ob_set = []
     iPOMDP.generateObservations(ob_case,ob_set)
     print(ob_set)
- 
+
 
 
 
