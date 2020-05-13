@@ -240,7 +240,7 @@ if __name__=="__main__":
     ob_set = []
     iPOMDP.generateObservations(ob_case,ob_set)
     print(ob_set)
-    prin
+ 
 
 
 
