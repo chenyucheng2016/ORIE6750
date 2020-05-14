@@ -75,7 +75,15 @@ class InfectionPOMDP:
         if l == len(self.valueSize[0:-1]):
             if h == (self.H-1):
                 V[h] = self.EvalTerminalStateVal(np.int_(state))
-
+            else:
+                state = np.int_(state)
+                controlSet = self.controlSet(state)
+                maxVal = -99
+                for l in controlSet:
+                    val = self.evalIntegral(state, l, h)
+                    if val > maxVal:
+                        maxVal = val
+                V[h] = maxVal
         else:
             dim = self.valueSize[l]
             for i in range(dim):
@@ -107,7 +115,7 @@ class InfectionPOMDP:
         val_int = 0
         for i in range(len(ob_set)):
             ob = ob_set[i]
-            expectedVal = self.ExpectVal(state, Lt, ob, unCertain, belief, h)
+            expectedVal = self.ExpectVal(state, Lt, ob, unCertain, belief, h+1)
             val_int = val_int + expectedVal * prob_ob[i]
         return val_int
 
@@ -122,7 +130,7 @@ class InfectionPOMDP:
                 ob = ob_case[j]
                 person = Lt[j]
                 product_ob = product_ob * (belief[person]**ob)*((1 - belief[j])**(1-ob))
-            prob[i] = product_ob
+            prob.append(product_ob)
         return prob, ob_set
 
     def generateObservations(self, ob_case, ob_set):
@@ -136,7 +144,9 @@ class InfectionPOMDP:
                 self.generateObservations(new_ob_case, ob_set)
 
 
-    def controlSet(self, unCertain):
+    def controlSet(self, state):
+        belief = self.belief_discretization[np.array(state[0:self.numPeople])]
+        unCertain = self.findUncertain(belief)
         return list(combinations(unCertain, self.L))
 
     def ExpectVal(self, state, Lt, observe, unCertain, belief, h):#expected value over dynamics given an observation
@@ -145,8 +155,9 @@ class InfectionPOMDP:
         # updated by observation
         for i in range(len(Lt)):
             l = Lt[i]
-            belief[l] = observe[i]
-            unCertain.remove(l)
+            if l in unCertain:
+                belief[l] = observe[i]
+                unCertain.remove(l)
         infected = self.findInfected(belief)
         uninfected = self.findUninfected(belief)
         for person in infected:
@@ -239,12 +250,8 @@ if __name__=="__main__":
     iPOMDP = InfectionPOMDP(init_belief, adjMat, p, q, L, H)
     state = [0,1,0,1,1]
     print(iPOMDP.valueFunction())
-    #print(iPOMDP.V)
-    #print(iPOMDP.evalStateValue(state, 3, 0, iPOMDP.V))
-    ob_case = []
-    ob_set = []
-    iPOMDP.generateObservations(ob_case,ob_set)
-    print(ob_set)
+    print(iPOMDP.V)
+
 
 
 
