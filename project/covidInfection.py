@@ -79,11 +79,14 @@ class InfectionPOMDP:
                 state = np.int_(state)
                 controlSet = self.controlSet(state)
                 maxVal = -99
-                for l in controlSet:
-                    val = self.evalIntegral(state, l, h)
-                    if val > maxVal:
-                        maxVal = val
-                V[h] = maxVal
+                if len(controlSet) > 0:
+                    for l in controlSet:
+                        val = self.evalIntegral(state, l, h)
+                        if val > maxVal:
+                            maxVal = val
+                    V[h] = maxVal
+                else:
+                    V[h] = self.EvalTerminalStateVal(state)
         else:
             dim = self.valueSize[l]
             for i in range(dim):
