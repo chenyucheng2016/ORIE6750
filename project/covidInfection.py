@@ -20,6 +20,7 @@ class InfectionPOMDP:
         valueSize = np.append(valueSize, H)
         self.valueSize = np.int_(valueSize)
         self.V = np.zeros(self.valueSize)# first numPeople dimentions are for nodes and the next numEdges dimentions are for social connections
+        self.optAction = dict()
 
     def genInitState(self):
         initState = []
@@ -29,6 +30,13 @@ class InfectionPOMDP:
             initState.append(1)
         initState = np.int_(initState)
         return initState
+
+    def state2String(self, state, h):
+        state = np.append(state, h)
+        state = np.int_(state)
+        strings = [str(integer) for integer in state]
+        a_string = "".join(strings)
+        return a_string
 
     def findOriginalEdges(self):
         edges = []
@@ -81,21 +89,27 @@ class InfectionPOMDP:
         return Uncertain
 
     def stateSearch(self, state, h, l, V):
+        state_str = self.state2String(state, h)
         if l == len(self.valueSize[0:-1]):
             if h == (self.H-1):
                 V[h] = self.EvalTerminalStateVal(np.int_(state))
+                self.optAction[state_str] = []
             else:
                 state = np.int_(state)
                 controlSet = self.controlSet(state)
                 maxVal = -99
+                optAct = []
                 if len(controlSet) > 0:
                     for l in controlSet:
                         val = self.evalIntegral(state, l, h)
                         if val > maxVal:
                             maxVal = val
+                            optAct = l
                     V[h] = maxVal
+                    self.optAction[state_str] = optAct
                 else:
                     V[h] = self.EvalTerminalStateVal(state)
+                    self.optAction[state_str] = []
         else:
             dim = self.valueSize[l]
             for i in range(dim):
@@ -243,17 +257,16 @@ class InfectionPOMDP:
                 pSet.append(list(c))
         return pSet
 
-
 if __name__=="__main__":
     p = 0.3
     q = 0.1
     L = 1
     #case 1
     numPeople = 3
-    H = 3
+    H = 4
     nodes = np.linspace(0,numPeople-1,numPeople)
     nodes = np.int_(nodes)
-    init_belief = np.array([2.0/3.0,1.0/2.0,1.0/2.0])
+    init_belief = np.array([5.0/6.0,1.0/60.0,1.0/60.0])
     adjMat = np.zeros((numPeople,numPeople))
     adjMat[0,1] = 1
     adjMat[0,2] = 1
@@ -263,7 +276,10 @@ if __name__=="__main__":
     iPOMDP.valueFunction()
     initState = iPOMDP.genInitState()
     v = iPOMDP.evalStateValue(initState, 0, 0, iPOMDP.V)
-    print(v)
+    initState_horizon = iPOMDP.state2String(initState, 0)
+    print(initState_horizon)
+    print(iPOMDP.optAction[initState_horizon])
+
 
 
 
