@@ -21,6 +21,15 @@ class InfectionPOMDP:
         self.valueSize = np.int_(valueSize)
         self.V = np.zeros(self.valueSize)# first numPeople dimentions are for nodes and the next numEdges dimentions are for social connections
 
+    def genInitState(self):
+        initState = []
+        for p in self.init_belif:
+            initState.append(round(p/self.belief_precision))
+        for i in range(self.numEdges):
+            initState.append(1)
+        initState = np.int_(initState)
+        return initState
+
     def findOriginalEdges(self):
         edges = []
         for i in range(self.numPeople):
@@ -241,7 +250,7 @@ if __name__=="__main__":
     L = 1
     #case 1
     numPeople = 3
-    H = 4
+    H = 3
     nodes = np.linspace(0,numPeople-1,numPeople)
     nodes = np.int_(nodes)
     init_belief = np.array([2.0/3.0,1.0/2.0,1.0/2.0])
@@ -251,9 +260,10 @@ if __name__=="__main__":
     adjMat[1,0] = 1
     adjMat[2,0] = 1
     iPOMDP = InfectionPOMDP(init_belief, adjMat, p, q, L, H)
-    state = [0,1,0,1,1]
-    print(iPOMDP.valueFunction())
-    print(iPOMDP.V)
+    iPOMDP.valueFunction()
+    initState = iPOMDP.genInitState()
+    v = iPOMDP.evalStateValue(initState, 0, 0, iPOMDP.V)
+    print(v)
 
 
 
