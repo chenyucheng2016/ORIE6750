@@ -1,6 +1,7 @@
 import numpy as np
 from copy import deepcopy
 from itertools import combinations
+import time
 class InfectionPOMDP:
     def __init__(self,init_belief, adjMat, p, q, L, H):
         self.init_belif = init_belief
@@ -138,6 +139,12 @@ class InfectionPOMDP:
         belief = self.belief_discretization[np.array(state[0:self.numPeople])]
         unCertain = self.findUncertain(belief)
         prob_ob, ob_set = self.observationFnc(Lt,belief)
+        #print(Lt)
+        #print(belief)
+        #print(prob_ob)
+        #print(ob_set)
+        #print('\n')
+        #time.sleep(5)
         val_int = 0
         for i in range(len(ob_set)):
             ob = ob_set[i]
@@ -151,11 +158,16 @@ class InfectionPOMDP:
         self.generateObservations([], ob_set)
         for i in range(len(ob_set)):
             ob_case = ob_set[i]
-            product_ob = 1
+            product_ob = 1.0
             for j in range(len(ob_case)):
                 ob = ob_case[j]
                 person = Lt[j]
-                product_ob = product_ob * (belief[person]**ob)*((1 - belief[j])**(1-ob))
+                #print(ob)
+                #print(belief[person])
+                #print(belief[person]**ob)
+                #print((1 - belief[person])**(1-ob))
+                #print('\n')
+                product_ob = product_ob * (belief[person]**ob)*((1 - belief[person])**(1-ob))
             prob.append(product_ob)
         return prob, ob_set
 
@@ -225,7 +237,7 @@ class InfectionPOMDP:
             return V[h]
         else:
             i = state[l]
-            return self.evalStateValue(state, h , l+1, V[i])
+            return self.evalStateValue(state, h, l+1, V[i])
 
     def isolateInfected(self, state):
         belief = self.belief_discretization[np.array(state[0:self.numPeople])]
@@ -263,10 +275,10 @@ if __name__=="__main__":
     L = 1
     #case 1
     numPeople = 3
-    H = 4
+    H = 10
     nodes = np.linspace(0,numPeople-1,numPeople)
     nodes = np.int_(nodes)
-    init_belief = np.array([5.0/6.0,1.0/60.0,1.0/60.0])
+    init_belief = np.array([3.0/4.0, 3.0/4.0, 3.0/4.0])
     adjMat = np.zeros((numPeople,numPeople))
     adjMat[0,1] = 1
     adjMat[0,2] = 1
@@ -275,10 +287,12 @@ if __name__=="__main__":
     iPOMDP = InfectionPOMDP(init_belief, adjMat, p, q, L, H)
     iPOMDP.valueFunction()
     initState = iPOMDP.genInitState()
-    v = iPOMDP.evalStateValue(initState, 0, 0, iPOMDP.V)
-    initState_horizon = iPOMDP.state2String(initState, 0)
-    print(initState_horizon)
-    print(iPOMDP.optAction[initState_horizon])
+    state = [3, 1, 1, 1, 1]
+    v = iPOMDP.evalStateValue(state, 0, 0, iPOMDP.V)
+    print(v)
+    #initState_horizon = iPOMDP.state2String(initState, 1)
+    #print(initState_horizon)
+    #print(iPOMDP.optAction[initState_horizon])
 
 
 
