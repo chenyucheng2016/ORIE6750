@@ -1,7 +1,7 @@
 import numpy as np
 from copy import deepcopy
 from itertools import combinations
-import time
+import matplotlib.pyplot as plt
 class InfectionPOMDP:
     def __init__(self,init_belief, adjMat, p, q, L, H):
         self.init_belif = init_belief
@@ -263,12 +263,14 @@ class InfectionPOMDP:
 
 
 if __name__=="__main__":
-    p = 0.3
+    p = 0.1
     q = 0.1
     L = 1
+    #case 2
+    """
     #case 1
     numPeople = 3
-    H = 4
+    H = 6
     nodes = np.linspace(0,numPeople-1,numPeople)
     nodes = np.int_(nodes)
     init_belief = np.array([1.0/4.0, 3.0/4.0, 3.0/4.0])
@@ -285,10 +287,38 @@ if __name__=="__main__":
     v1 = iPOMDP.evalStateValue(state, 1, 0, iPOMDP.V)
     v2 = iPOMDP.evalStateValue(state, 2, 0, iPOMDP.V)
     v3 = iPOMDP.evalStateValue(state, 3, 0, iPOMDP.V)
+    v4 = iPOMDP.evalStateValue(state, 4, 0, iPOMDP.V)
+    v5 = iPOMDP.evalStateValue(state, 5, 0, iPOMDP.V)
+    iPOMDP1 = InfectionPOMDP(init_belief, adjMat, p, 0.9, L, H)
+    iPOMDP2 = InfectionPOMDP(init_belief, adjMat, 0.9, q, L, H)
+    iPOMDP1.valueFunction()
+    iPOMDP2.valueFunction()
+    v10 = iPOMDP1.evalStateValue(state, 0, 0, iPOMDP1.V)
+    v11 = iPOMDP1.evalStateValue(state, 1, 0, iPOMDP1.V)
+    v12 = iPOMDP1.evalStateValue(state, 2, 0, iPOMDP1.V)
+    v13 = iPOMDP1.evalStateValue(state, 3, 0, iPOMDP1.V)
+    v14 = iPOMDP1.evalStateValue(state, 4, 0, iPOMDP1.V)
+    v15 = iPOMDP1.evalStateValue(state, 5, 0, iPOMDP1.V)
+    v20 = iPOMDP2.evalStateValue(state, 0, 0, iPOMDP2.V)
+    v21 = iPOMDP2.evalStateValue(state, 1, 0, iPOMDP2.V)
+    v22 = iPOMDP2.evalStateValue(state, 2, 0, iPOMDP2.V)
+    v23 = iPOMDP2.evalStateValue(state, 3, 0, iPOMDP2.V)
+    v24 = iPOMDP2.evalStateValue(state, 4, 0, iPOMDP2.V)
+    v25 = iPOMDP2.evalStateValue(state, 5, 0, iPOMDP2.V)
+    fig, ax = plt.subplots()
+    ax.plot([0, 1, 2, 3, 4, 5], [v5, v4, v3, v2, v1, v0], 'ob', label='p = 0.1, q = 0.1')
+    ax.plot([0, 1, 2, 3, 4, 5], [v15, v14, v13, v12, v11, v10], '^r', label='p = 0.1, q = 0.9')
+    ax.plot([0, 1, 2, 3, 4, 5], [v25, v24, v23, v22, v21, v20], 'sy', label='p = 0.9, q = 0.1')
     print(v0)
-    print(v1)
-    print(v2)
-    print(v3)
+    print(v10)
+    print(v20)
+    ax.axis('equal')
+    leg = ax.legend()
+    plt.xlabel('horizon remaning (h)')
+    plt.ylabel('value')
+    plt.show()
+    """
+
 
 
 
