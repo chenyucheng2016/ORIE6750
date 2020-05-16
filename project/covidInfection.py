@@ -2,6 +2,7 @@ import numpy as np
 from copy import deepcopy
 from itertools import combinations
 import matplotlib.pyplot as plt
+import time
 class InfectionPOMDP:
     def __init__(self,init_belief, adjMat, p, q, L, H):
         self.init_belif = init_belief
@@ -268,7 +269,7 @@ if __name__=="__main__":
     L = 2
     #case 2
     numPeople = 5
-    H = 6
+    H = 5
     nodes = np.linspace(0, numPeople - 1, numPeople)
     nodes = np.int_(nodes)
     init_belief = np.array([1.0/4.0, 3.0/4.0, 3.0/4.0, 1.0/2.0, 1.0/2.0])
@@ -306,12 +307,13 @@ if __name__=="__main__":
     initState = iPOMDP.genInitState()
     state = [1, 1, 1, 1, 1]
     """
+    start = time.time()
     v0 = iPOMDP.evalStateValue(state, 0, 0, iPOMDP.V)
     v1 = iPOMDP.evalStateValue(state, 1, 0, iPOMDP.V)
     v2 = iPOMDP.evalStateValue(state, 2, 0, iPOMDP.V)
     v3 = iPOMDP.evalStateValue(state, 3, 0, iPOMDP.V)
     v4 = iPOMDP.evalStateValue(state, 4, 0, iPOMDP.V)
-    v5 = iPOMDP.evalStateValue(state, 5, 0, iPOMDP.V)
+    #v5 = iPOMDP.evalStateValue(state, 5, 0, iPOMDP.V)
     iPOMDP1 = InfectionPOMDP(init_belief, adjMat, p, 0.9, L, H)
     iPOMDP2 = InfectionPOMDP(init_belief, adjMat, 0.9, q, L, H)
     iPOMDP1.valueFunction()
@@ -321,24 +323,27 @@ if __name__=="__main__":
     v12 = iPOMDP1.evalStateValue(state, 2, 0, iPOMDP1.V)
     v13 = iPOMDP1.evalStateValue(state, 3, 0, iPOMDP1.V)
     v14 = iPOMDP1.evalStateValue(state, 4, 0, iPOMDP1.V)
-    v15 = iPOMDP1.evalStateValue(state, 5, 0, iPOMDP1.V)
+    #v15 = iPOMDP1.evalStateValue(state, 5, 0, iPOMDP1.V)
     v20 = iPOMDP2.evalStateValue(state, 0, 0, iPOMDP2.V)
     v21 = iPOMDP2.evalStateValue(state, 1, 0, iPOMDP2.V)
     v22 = iPOMDP2.evalStateValue(state, 2, 0, iPOMDP2.V)
     v23 = iPOMDP2.evalStateValue(state, 3, 0, iPOMDP2.V)
     v24 = iPOMDP2.evalStateValue(state, 4, 0, iPOMDP2.V)
-    v25 = iPOMDP2.evalStateValue(state, 5, 0, iPOMDP2.V)
+    #v25 = iPOMDP2.evalStateValue(state, 5, 0, iPOMDP2.V)
     fig, ax = plt.subplots()
-    ax.plot([0, 1, 2, 3, 4, 5], [v5, v4, v3, v2, v1, v0], 'ob', label='p = 0.1, q = 0.1')
-    ax.plot([0, 1, 2, 3, 4, 5], [v15, v14, v13, v12, v11, v10], '^r', label='p = 0.1, q = 0.9')
-    ax.plot([0, 1, 2, 3, 4, 5], [v25, v24, v23, v22, v21, v20], 'sy', label='p = 0.9, q = 0.1')
+    ax.plot([0, 1, 2, 3, 4], [v4, v3, v2, v1, v0], 'ob', label='p = 0.1, q = 0.1')
+    ax.plot([0, 1, 2, 3, 4], [v14, v13, v12, v11, v10], '^r', label='p = 0.1, q = 0.9')
+    ax.plot([0, 1, 2, 3, 4], [v24, v23, v22, v21, v20], 'sy', label='p = 0.9, q = 0.1')
+    end = time.time()
     print(v0)
     print(v10)
     print(v20)
+    print(end - start)
     ax.axis('equal')
     leg = ax.legend()
     plt.xlabel('horizon remaning (h)')
     plt.ylabel('value')
+    plt.xlim(0, 4)
     plt.show()
 
 
