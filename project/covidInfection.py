@@ -268,7 +268,7 @@ if __name__=="__main__":
     L = 2
     #case 2
     numPeople = 5
-    H = 7
+    H = 6
     nodes = np.linspace(0, numPeople - 1, numPeople)
     nodes = np.int_(nodes)
     init_belief = np.array([1.0/4.0, 3.0/4.0, 3.0/4.0, 1.0/2.0, 1.0/2.0])
@@ -287,6 +287,8 @@ if __name__=="__main__":
     adjMat[4, 2] = 1
     iPOMDP = InfectionPOMDP(init_belief, adjMat, p, q, L, H)
     iPOMDP.valueFunction()
+    state = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+
     """
     #case 1
     numPeople = 3
@@ -303,6 +305,7 @@ if __name__=="__main__":
     iPOMDP.valueFunction()
     initState = iPOMDP.genInitState()
     state = [1, 1, 1, 1, 1]
+    """
     v0 = iPOMDP.evalStateValue(state, 0, 0, iPOMDP.V)
     v1 = iPOMDP.evalStateValue(state, 1, 0, iPOMDP.V)
     v2 = iPOMDP.evalStateValue(state, 2, 0, iPOMDP.V)
@@ -337,7 +340,6 @@ if __name__=="__main__":
     plt.xlabel('horizon remaning (h)')
     plt.ylabel('value')
     plt.show()
-    """
 
 
 
