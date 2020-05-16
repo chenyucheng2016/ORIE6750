@@ -265,8 +265,28 @@ class InfectionPOMDP:
 if __name__=="__main__":
     p = 0.1
     q = 0.1
-    L = 1
+    L = 2
     #case 2
+    numPeople = 5
+    H = 7
+    nodes = np.linspace(0, numPeople - 1, numPeople)
+    nodes = np.int_(nodes)
+    init_belief = np.array([1.0/4.0, 3.0/4.0, 3.0/4.0, 1.0/2.0, 1.0/2.0])
+    adjMat = np.zeros((numPeople, numPeople))
+    #one direction
+    adjMat[0, 1] = 1
+    adjMat[0, 2] = 1
+    adjMat[0, 3] = 1
+    adjMat[1, 3] = 1
+    adjMat[2, 4] = 1
+    #the other direction
+    adjMat[1, 0] = 1
+    adjMat[2, 0] = 1
+    adjMat[3, 0] = 1
+    adjMat[3, 1] = 1
+    adjMat[4, 2] = 1
+    iPOMDP = InfectionPOMDP(init_belief, adjMat, p, q, L, H)
+    iPOMDP.valueFunction()
     """
     #case 1
     numPeople = 3
