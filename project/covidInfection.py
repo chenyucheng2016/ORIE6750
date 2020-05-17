@@ -270,17 +270,25 @@ class InfectionPOMDP:
                     maxbelief = belief[i]
                     maxperson = i
         return int(maxperson)
-    def simHeuristic1(self, epoch, init_state):
+    def HeuristicPolicy2(self, state):
+        new_state = self.transitionDynamics(state)
+        belief = self.belief_discretization[np.array(new_state[0:self.numPeople])]
+        return  self.HeuristicPolicy1(belief)
+
+    def simHeuristic1(self, epoch, init_state, horizon):
         vals = np.zeros(epoch)
         for i in range(epoch):
             state = deepcopy(init_state)
-            for h in range(self.H):
+            for h in range(horizon):
+                #print(state)
                 belief = self.belief_discretization[np.array(state[0:self.numPeople])]
                 unCertain = self.findUncertain(belief)
                 if not unCertain:
                     vals[i] = len(self.findUninfected(belief))
+                    break
                 else:
                     test_person = self.HeuristicPolicy1(belief)
+                    #print(test_person)
                     belief_person = belief[test_person]
                     if np.random.uniform(0,1) < belief_person:
                         state[test_person] = int(len(self.belief_discretization) - 1)
@@ -288,6 +296,34 @@ class InfectionPOMDP:
                         state[test_person] = 0
                     for j in range(len(belief)):
                         if belief[j] < 1 and np.random.uniform(0,1) < self.q*belief[j]:
+                            state[j] = int(len(self.belief_discretization) - 1)
+                state = self.transitionDynamics(state)
+                state = self.isolateInfected(state)
+            belief = self.belief_discretization[np.array(state[0:self.numPeople])]
+            vals[i] = len(self.findUninfected(belief))
+        return np.mean(vals)
+
+    def simHeuristic2(self, epoch, init_state, horizon):
+        vals = np.zeros(epoch)
+        for i in range(epoch):
+            state = deepcopy(init_state)
+            for h in range(horizon):
+                # print(state)
+                belief = self.belief_discretization[np.array(state[0:self.numPeople])]
+                unCertain = self.findUncertain(belief)
+                if not unCertain:
+                    vals[i] = len(self.findUninfected(belief))
+                    break
+                else:
+                    test_person = self.HeuristicPolicy2(deepcopy(state))
+                    # print(test_person)
+                    belief_person = belief[test_person]
+                    if np.random.uniform(0, 1) < belief_person:
+                        state[test_person] = int(len(self.belief_discretization) - 1)
+                    else:
+                        state[test_person] = 0
+                    for j in range(len(belief)):
+                        if belief[j] < 1 and np.random.uniform(0, 1) < self.q * belief[j]:
                             state[j] = int(len(self.belief_discretization) - 1)
                 state = self.transitionDynamics(state)
                 state = self.isolateInfected(state)
@@ -303,8 +339,8 @@ class InfectionPOMDP:
 
 
 if __name__=="__main__":
-    p = 0.1
-    q = 0.1
+    p = 0.6
+    q = 0.3
     L = 1
     H = 7
     numPeople = 5
@@ -326,10 +362,26 @@ if __name__=="__main__":
     adjMat[4, 2] = 1
     iPOMDP = InfectionPOMDP(init_belief, adjMat, p, q, L, H)
     iPOMDP.valueFunction()
-    state = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    v0 = iPOMDP.evalStateValue(state, 0, 0, iPOMDP.V)
-    print(v0)
-    print(iPOMDP.simHeuristic1(20000,state))
+    state = [3, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    v_opt = np.zeros(H)
+    v_hp1 = np.zeros(H)
+    v_hp2 = np.zeros(H)
+    horizons = np.linspace(0, H-1, H)
+    for i in range(H):
+        v_opt[int(H-1-i)] = iPOMDP.evalStateValue(state, i, 0, iPOMDP.V)
+        v_hp1[i] = iPOMDP.simHeuristic1(20000,state,i+1)
+        v_hp2[i] = iPOMDP.simHeuristic2(20000,state,i+1)
+    fig, ax = plt.subplots()
+    ax.plot(horizons, v_opt, 'ob', label='optimal polciy')
+    ax.plot(horizons, v_hp1, '^r', label='Heuristic 1')
+    ax.plot(horizons, v_hp2, 'sy', label='Heuristic 2')
+    ax.axis('equal')
+    leg = ax.legend()
+    plt.xlabel('horizon remaining (h)')
+    plt.ylabel('value')
+    plt.xlim(0, 4)
+    plt.show()
+
     """
     #case 1
     numPeople = 3
