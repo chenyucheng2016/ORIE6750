@@ -270,25 +270,31 @@ class InfectionPOMDP:
                     maxbelief = belief[i]
                     maxperson = i
         return int(maxperson)
-    def simHeuristic1(self, epoch, state):
-        belief = self.belief_discretization[np.array(state[0:self.numPeople])]
+    def simHeuristic1(self, epoch, init_state):
         vals = np.zeros(epoch)
         for i in range(epoch):
-            belief_copy = deepcopy(belief)
-            for h in range(H):
-                unCertain = self.findUncertain(belief_copy)
+            state = deepcopy(init_state)
+            for h in range(self.H):
+                belief = self.belief_discretization[np.array(state[0:self.numPeople])]
+                unCertain = self.findUncertain(belief)
                 if not unCertain:
-                    vals[i] = len(self.findUninfected(belief_copy))
+                    vals[i] = len(self.findUninfected(belief))
                 else:
-                    test_person = self.HeuristicPolicy1(belief_copy)
-                    belief_person = belief_copy[test_person]
+                    test_person = self.HeuristicPolicy1(belief)
+                    belief_person = belief[test_person]
                     if np.random.uniform(0,1) < belief_person:
-                        belief_copy[test_person] = 1
+                        state[test_person] = int(len(self.belief_discretization) - 1)
                     else:
-                        belief_copy[test_person] = 0
-                    for j in range(len(belief_copy)):
-                        if belief_copy[j] < 1 and np.random.uniform(0,1) < q*belief_copy[j]:
-                            belief_copy[j] = 1
+                        state[test_person] = 0
+                    for j in range(len(belief)):
+                        if belief[j] < 1 and np.random.uniform(0,1) < self.q*belief[j]:
+                            state[j] = int(len(self.belief_discretization) - 1)
+                state = self.transitionDynamics(state)
+                state = self.isolateInfected(state)
+            belief = self.belief_discretization[np.array(state[0:self.numPeople])]
+            vals[i] = len(self.findUninfected(belief))
+        return np.mean(vals)
+
 
 
 
@@ -299,13 +305,9 @@ class InfectionPOMDP:
 if __name__=="__main__":
     p = 0.1
     q = 0.1
-    L = 2
-    H = 5
-    valueHeuristicPolicy1(10, 5, [0.1, 0.2, 0.7], p, q, L)
-    """
-    #case 2
+    L = 1
+    H = 7
     numPeople = 5
-    H = 5
     nodes = np.linspace(0, numPeople - 1, numPeople)
     nodes = np.int_(nodes)
     init_belief = np.array([1.0/4.0, 3.0/4.0, 3.0/4.0, 1.0/2.0, 1.0/2.0])
@@ -325,7 +327,10 @@ if __name__=="__main__":
     iPOMDP = InfectionPOMDP(init_belief, adjMat, p, q, L, H)
     iPOMDP.valueFunction()
     state = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-
+    v0 = iPOMDP.evalStateValue(state, 0, 0, iPOMDP.V)
+    print(v0)
+    print(iPOMDP.simHeuristic1(20000,state))
+    """
     #case 1
     numPeople = 3
     H = 6
