@@ -261,12 +261,48 @@ class InfectionPOMDP:
                 pSet.append(list(c))
         return pSet
 
+    def HeuristicPolicy1(self, belief):
+        maxbelief = -1
+        maxperson = -1
+        for i in range(len(belief)):
+            if belief[i] < 1:
+                if belief[i] > maxbelief:
+                    maxbelief = belief[i]
+                    maxperson = i
+        return int(maxperson)
+    def simHeuristic1(self, epoch, state):
+        belief = self.belief_discretization[np.array(state[0:self.numPeople])]
+        vals = np.zeros(epoch)
+        for i in range(epoch):
+            belief_copy = deepcopy(belief)
+            for h in range(H):
+                unCertain = self.findUncertain(belief_copy)
+                if not unCertain:
+                    vals[i] = len(self.findUninfected(belief_copy))
+                else:
+                    test_person = self.HeuristicPolicy1(belief_copy)
+                    belief_person = belief_copy[test_person]
+                    if np.random.uniform(0,1) < belief_person:
+                        belief_copy[test_person] = 1
+                    else:
+                        belief_copy[test_person] = 0
+                    for j in range(len(belief_copy)):
+                        if belief_copy[j] < 1 and np.random.uniform(0,1) < q*belief_copy[j]:
+                            belief_copy[j] = 1
+
+
+
+
+
 
 
 if __name__=="__main__":
     p = 0.1
     q = 0.1
     L = 2
+    H = 5
+    valueHeuristicPolicy1(10, 5, [0.1, 0.2, 0.7], p, q, L)
+    """
     #case 2
     numPeople = 5
     H = 5
@@ -290,7 +326,6 @@ if __name__=="__main__":
     iPOMDP.valueFunction()
     state = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 
-    """
     #case 1
     numPeople = 3
     H = 6
@@ -306,7 +341,6 @@ if __name__=="__main__":
     iPOMDP.valueFunction()
     initState = iPOMDP.genInitState()
     state = [1, 1, 1, 1, 1]
-    """
     start = time.time()
     v0 = iPOMDP.evalStateValue(state, 0, 0, iPOMDP.V)
     v1 = iPOMDP.evalStateValue(state, 1, 0, iPOMDP.V)
@@ -345,6 +379,7 @@ if __name__=="__main__":
     plt.ylabel('value')
     plt.xlim(0, 4)
     plt.show()
+    """
 
 
 
