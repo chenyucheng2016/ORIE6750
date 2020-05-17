@@ -339,7 +339,7 @@ class InfectionPOMDP:
 
 
 if __name__=="__main__":
-    p = 0.6
+    p = 0.8
     q = 0.3
     L = 1
     H = 7
@@ -362,15 +362,15 @@ if __name__=="__main__":
     adjMat[4, 2] = 1
     iPOMDP = InfectionPOMDP(init_belief, adjMat, p, q, L, H)
     iPOMDP.valueFunction()
-    state = [3, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    state = [3, 1, 2, 1, 1, 1, 1, 1, 1, 1]
     v_opt = np.zeros(H)
     v_hp1 = np.zeros(H)
     v_hp2 = np.zeros(H)
     horizons = np.linspace(0, H-1, H)
     for i in range(H):
         v_opt[int(H-1-i)] = iPOMDP.evalStateValue(state, i, 0, iPOMDP.V)
-        v_hp1[i] = iPOMDP.simHeuristic1(20000,state,i+1)
-        v_hp2[i] = iPOMDP.simHeuristic2(20000,state,i+1)
+        v_hp1[i] = iPOMDP.simHeuristic1(5000,state,i+1)
+        v_hp2[i] = iPOMDP.simHeuristic2(5000,state,i+1)
     fig, ax = plt.subplots()
     ax.plot(horizons, v_opt, 'ob', label='optimal polciy')
     ax.plot(horizons, v_hp1, '^r', label='Heuristic 1')
@@ -379,7 +379,6 @@ if __name__=="__main__":
     leg = ax.legend()
     plt.xlabel('horizon remaining (h)')
     plt.ylabel('value')
-    plt.xlim(0, 4)
     plt.show()
 
     """
